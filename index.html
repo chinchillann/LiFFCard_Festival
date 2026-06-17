@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>端午限定：五穀禪風・福氣粽手作</title>
+    <!-- 引入 LINE LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --bg-color: #f1f8e9;
+            --card-bg: #ffffff;
+            --text-color: #37474f;
+        }
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #78909c;
+            margin-bottom: 25px;
+        }
+        .section-title {
+            text-align: left;
+            font-weight: bold;
+            margin: 15px 0 8px 0;
+            color: #546e7a;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 8px;
+        }
+        /* 選擇米基底的 Radio 樣式 */
+        .radio-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .radio-label {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #cfd8dc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        input[type="radio"]:checked + .radio-label {
+            border-color: var(--primary-color);
+            background-color: #e8f5e9;
+            color: var(--primary-color);
+        }
+        input[type="radio"] { display: none; }
+
+        /* 選擇配料的 Checkbox 樣式 */
+        .grid-ingredients {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .check-label {
+            padding: 10px;
+            border: 1px solid #cfd8dc;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        input[type="checkbox"]:checked + .check-label {
+            background-color: #e8f5e9;
+            border-color: var(--primary-color);
+        }
+        input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
+
+        /* 按鈕樣式 */
+        .btn-send {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-send:hover {
+            background-color: #1b5e20;
+            transform: translateY(-2px);
+        }
+        .btn-send:disabled {
+            background-color: #b0bec5;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #90a4ae;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🫔 五穀禪風・福氣粽手作</h1>
+    <div class="subtitle">挑選天然好料，用 LINE 調配專屬祝福送給親友！</div>
+
+    <!-- 步驟一：選基底 -->
+    <div class="section-title">1. 選擇福氣米基底</div>
+    <div class="radio-group">
+        <input type="radio" id="rice1" name="rice" value="養生黑紫米" checked>
+        <label for="rice1" class="radio-label">🍇 養生黑紫米<br><span style="font-size:11px; font-weight:normal; color:#78909c;">(大紅大紫運勢旺)</span></label>
+        
+        <input type="radio" id="rice2" name="rice" value="黃金燕麥五穀米">
+        <label for="rice2" class="radio-label">🌾 黃金五穀米<br><span style="font-size:11px; font-weight:normal; color:#78909c;">(金玉滿堂身安康)</span></label>
+    </div>
+
+    <!-- 步驟二：選配料 -->
+    <div class="section-title">2. 注入蔬福配料 (可複選)</div>
+    <div class="grid-ingredients">
+        <div>
+            <input type="checkbox" id="ing1" value="相思紅豆" checked>
+            <label for="ing1" class="check-label">🔴 相思紅豆 (好人緣)</label>
+        </div>
+        <div>
+            <input type="checkbox" id="ing2" value="開運綠豆">
+            <label for="ing2" class="check-label">🟢 開運綠豆 (事業發)</label>
+        </div>
+        <div>
+            <input type="checkbox" id="ing3" value="長壽花生" checked>
+            <label for="ing3" class="check-label">🥜 長壽花生 (好運發生)</label>
+        </div>
+        <div>
+            <input type="checkbox" id="ing4" value="富貴栗子" checked>
+            <label for="ing4" class="check-label">🌰 富貴栗子 (立馬發財)</label>
+        </div>
+        <div>
+            <input type="checkbox" id="ing5" value="好運蓮子">
+            <label for="ing5" class="check-label">🪷 好運蓮子 (好運連連)</label>
+        </div>
+        <div>
+            <input type="checkbox" id="ing6" value="活力銀杏">
+            <label for="ing6" class="check-label">⚪ 活力銀杏 (腦袋靈光)</label>
+        </div>
+    </div>
+
+    <!-- 送出按鈕 -->
+    <button class="btn-send" id="sendBtn" onclick="processAndSend()" disabled>正在初始化賀卡系統...</button>
+    <div id="status">請在 LINE App 內開啟此網頁以獲得最佳體驗</div>
+</div>
+
+<script>
+    // 💡 請替換成您在 LINE Developers 申請的 LIFF ID
+    const MY_LIFF_ID = '2009826317-bfxoaTmF'; 
+
+    // 初始化 LIFF
+    liff.init({ liffId: MY_LIFF_ID })
+        .then(() => {
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('sendBtn').innerText = '🚀 封裝福氣！以 LINE 送出賀卡';
+            document.getElementById('status').innerText = 'LIFF 系統就緒，可以開始包粽子囉！';
+            
+            // 確保使用者登入才能使用 Share Target Picker
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            }
+        })
+        .catch((err) => {
+            console.error('LIFF 初始化失敗', err);
+            document.getElementById('status').innerText = '系統初始化失敗，請確認 LIFF ID 是否正確。';
+        });
+
+    // 核心邏輯：處理勾選內容並送出
+    function processAndSend() {
+        // 1. 取得米基底
+        const riceType = document.querySelector('input[name="rice"]:checked').value;
+        
+        // 2. 取得所有勾選的配料
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        let ingredients = [];
+        checkboxes.forEach(cb => ingredients.push(cb.value));
+
+        if(ingredients.length === 0) {
+            alert("🧘 溫馨小提醒：粽子不能空心，請至少選擇一種配料！");
+            return;
+        }
+
+        // 3. 自動計算「禪意稱號」與「祝賀詞」
+        let title = `【${riceType}】`;
+        let blessing = "願您端午蔬福安康，日子甜如紅豆，好事接二連三『發生』！";
+
+        if (ingredients.includes('長壽花生') && ingredients.includes('富貴栗子')) {
+            title += "「栗馬發財・好運發生」雙喜禪意粽";
+            blessing = "特製這顆富貴雙全粽送您！祝您今年財富『栗』馬發財，生活處處有好運『發生』，端午蔬福安康！";
+        } else if (ingredients.length >= 4) {
+            title += "「福祿壽喜・功德圓滿」全能五穀頂級粽";
+            blessing = "集結了滿滿五穀精華！吃下這顆粽，今年運勢大紅大紫，福氣、財運、健康通通圓滿！";
+        } else {
+            title += "「清心養生・法喜充滿」精進健康粽";
+            blessing = "送您一顆純粹的祝福。少點負擔、多點健康，願您這個端午節身心自在，法喜充滿！";
+        }
+
+        const ingredientsStr = ingredients.join('、');
+
+        // 4. 呼叫 LINE Share Target Picker
+        if (liff.isApiAvailable('shareTargetPicker')) {
+            liff.shareTargetPicker([
+                {
+                    "type": "flex",
+                    "altText": "🫔 您收到了一顆來自好友的專屬端午福氣五穀粽！",
+                    "contents": {
+                        "type": "bubble",
+                        "hero": {
+                            "type": "image",
+                            "url": "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80",
+                            "size": "full",
+                            "aspectRatio": "20:13",
+                            "aspectMode": "cover"
+                        },
+                        "body": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "🧘 來自好友的端午蔬福外送",
+                                    "weight": "bold",
+                                    "size": "sm",
+                                    "color": "#2E7D32"
+                                },
+                                {
+                                    "type": "text",
+                                    "text": title,
+                                    "weight": "bold",
+                                    "size": "md",
+                                    "margin": "md",
+                                    "wrap": true,
+                                    "color": "#2C3E50"
+                                },
+                                {
+                                    "type": "box",
+                                    "layout": "vertical",
+                                    "margin": "lg",
+                                    "spacing": "sm",
+                                    "contents": [
+                                        {
+                                            "type": "box",
+                                            "layout": "baseline",
+                                            "spacing": "sm",
+                                            "contents": [
+                                                {
+                                                    "type": "text",
+                                                    "text": "福氣配料",
+                                                    "color": "#aaaaaa",
+                                                    "size": "xs",
+                                                    "flex": 2
+                                                },
+                                                {
+                                                    "type": "text",
+                                                    "text": ingredientsStr,
+                                                    "wrap": true,
+                                                    "color": "#666666",
+                                                    "size": "xs",
+                                                    "flex": 5
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "box",
+                                            "layout": "baseline",
+                                            "spacing": "sm",
+                                            "contents": [
+                                                {
+                                                    "type": "text",
+                                                    "text": "開示祝賀",
+                                                    "color": "#aaaaaa",
+                                                    "size": "xs",
+                                                    "flex": 2
+                                                },
+                                                {
+                                                    "type": "text",
+                                                    "text": blessing,
+                                                    "wrap": true,
+                                                    "color": "#546E7A",
+                                                    "size": "xs",
+                                                    "flex": 5
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "footer": {
+                            "type": "box",
+                            "layout": "vertical",
+                            "spacing": "sm",
+                            "contents": [
+                                {
+                                    "type": "button",
+                                    "style": "primary",
+                                    "color": "#2E7D32",
+                                    "action": {
+                                        "type": "uri",
+                                        "label": "我也要調配福氣粽送人",
+                                        "uri": "https://liff.line.me/" + MY_LIFF_ID
+                                    }
+                                }
+                            ],
+                            "flex": 0
+                        }
+                    }
+                }
+            ])
+            .then((res) => {
+                if (res) {
+                    alert("🎉 福氣粽已成功送出！功德+1");
+                } else {
+                    console.log("使用者取消傳送");
+                }
+            })
+            .catch((err) => {
+                console.error("傳送失敗", err);
+                alert("傳送失敗，請確認是否在 LINE 環境內執行。");
+            });
+        } else {
+            alert("目前環境不支援 Share Target Picker，請用 LINE 開啟此網頁喔！");
+        }
+    }
+</script>
+
+</body>
+</html>
