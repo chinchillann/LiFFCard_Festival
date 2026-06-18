@@ -3,358 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>端午限定：五穀禪風・福氣粽手作</title>
+    <title>端午歲時・身心防禦編譯器</title>
     <!-- 引入 LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        :root {
-            --primary-color: #2e7d32;
-            --bg-color: #f1f8e9;
-            --card-bg: #ffffff;
-            --text-color: #37474f;
-        }
         body {
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            margin: 0; padding: 0;
+            background-color: #0f141c; color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; overflow: hidden;
         }
-        .container {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            max-width: 450px;
-            width: 100%;
-            text-align: center;
+        .game-container {
+            position: relative; display: flex; gap: 25px; background: #1a2333; padding: 20px;
+            border-radius: 16px; border: 1px solid #2e3d52; max-width: 95vw;
         }
-        h1 {
-            color: var(--primary-color);
-            font-size: 24px;
-            margin-bottom: 5px;
+        canvas { background: #090d16; border-radius: 8px; border: 2px solid #10b981; }
+        .dashboard { width: 220px; display: flex; flex-direction: column; justify-content: space-between; }
+        h2 { margin: 0 0 10px 0; color: #10b981; font-size: 18px; letter-spacing: 1px; }
+        .desc { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px; }
+        .stat-box { background: #0d131f; border: 1px solid #2e3d52; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        .stat-label { font-size: 11px; color: #64748b; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #10b981; margin-top: 4px; font-family: monospace; }
+        .legend { font-size: 12px; margin-top: 15px; border-top: 1px dashed #2e3d52; padding-top: 15px; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; color: #94a3b8; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+        
+        /* 按鈕與遮罩控制 */
+        .btn-action { background: #10b981; color: #090d16; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        .btn-action:hover { background: #34d399; }
+        
+        /* 轉場動畫外層遮罩 */
+        #transition-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(9, 13, 22, 0.95); border-radius: 16px;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 30px; box-sizing: border-box; z-index: 10;
         }
-        .subtitle {
-            font-size: 14px;
-            color: #78909c;
-            margin-bottom: 25px;
+        .terminal-box {
+            width: 90%; font-family: monospace; font-size: 13px; line-height: 1.8;
+            color: #34d399; text-align: left; white-space: pre-wrap;
         }
-        .section-title {
-            text-align: left;
-            font-weight: bold;
-            margin: 15px 0 8px 0;
-            color: #546e7a;
-            border-left: 4px solid var(--primary-color);
-            padding-left: 8px;
+        .typing-line {
+            opacity: 0; overflow: hidden; border-right: 2px solid transparent;
+            margin-bottom: 8px;
         }
-        /* 選擇米基底的 Radio 樣式 */
-        .radio-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .radio-label {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #cfd8dc;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-        input[type="radio"]:checked + .radio-label {
-            border-color: var(--primary-color);
-            background-color: #e8f5e9;
-            color: var(--primary-color);
-        }
-        input[type="radio"] { display: none; }
-
-        /* 選擇配料的 Checkbox 樣式 */
-        .grid-ingredients {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        .check-label {
-            padding: 10px;
-            border: 1px solid #cfd8dc;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-        input[type="checkbox"]:checked + .check-label {
-            background-color: #e8f5e9;
-            border-color: var(--primary-color);
-        }
-        input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
-
-        /* 按鈕樣式 */
-        .btn-send {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
-            transition: all 0.2s;
-        }
-        .btn-send:hover {
-            background-color: #1b5e20;
-            transform: translateY(-2px);
-        }
-        .btn-send:disabled {
-            background-color: #b0bec5;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-        #status {
-            margin-top: 15px;
-            font-size: 12px;
-            color: #90a4ae;
-        }
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes fadeIn { to { opacity: 1 } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🫔 五穀禪風・福氣粽手作</h1>
-    <div class="subtitle">挑選天然好料，用 LINE 調配專屬祝福送給親友！</div>
+    <div class="game-container">
+        <!-- 轉場視窗 -->
+        <div id="transition-overlay">
+            <div class="terminal-box" id="terminal-content"></div>
+        </div>
 
-    <!-- 步驟一：選基底 -->
-    <div class="section-title">1. 選擇福氣米基底</div>
-    <div class="radio-group">
-        <input type="radio" id="rice1" name="rice" value="養生黑紫米" checked>
-        <label for="rice1" class="radio-label">🍇 養生黑紫米<br><span style="font-size:11px; font-weight:normal; color:#78909c;">(大紅大紫運勢旺)</span></label>
+        <canvas id="pachinko" width="380" height="520"></canvas>
+        <div class="dashboard">
+            <div>
+                <h2>🌿 歲時身心防禦編譯</h2>
+                <div class="desc">移動底部的中央容器，在 15 秒內收集落下的節氣食材與祝福微粒，制作專屬的端午御守。</div>
+                
+                <div class="stat-box">
+                    <div class="stat-label">倒數計時 (Timer)</div>
+                    <div class="stat-value" id="timer-val" style="color: #f59e0b;">15s</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-label">已封裝食材 (Ingredients)</div>
+                    <div class="stat-value" id="score-val">0</div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item"><div class="dot" style="background:#e2e8f0;"></div><span>🍚 糯米（穩健底氣）</span></div>
+                    <div class="legend-item"><div class="dot" style="background:#10b981;"></div><span>🌿 粽葉（防禦阻尼）</span></div>
+                    <div class="legend-item"><div class="dot" style="background:#f59e0b;"></div><span>🥚 蛋黃（核心功能）</span></div>
+                    <div class="legend-item"><div class="dot" style="background:#f43f5e;"></div><span>❌ 五毒（環境雜音）</span></div>
+                </div>
+            </div>
+            <button class="btn-action" id="start-btn">⚡ 開始制作開運粽</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化 LINE LIFF 
+        const MY_LIFF_ID = '2009826317-bfxoaTmF'; 
         
-        <input type="radio" id="rice2" name="rice" value="黃金燕麥五穀米">
-        <label for="rice2" class="radio-label">🌾 黃金五穀米<br><span style="font-size:11px; font-weight:normal; color:#78909c;">(金玉滿堂身安康)</span></label>
-    </div>
-
-    <!-- 步驟二：選配料 -->
-    <div class="section-title">2. 注入蔬福配料 (可複選)</div>
-    <div class="grid-ingredients">
-        <div>
-            <input type="checkbox" id="ing1" value="相思紅豆" checked>
-            <label for="ing1" class="check-label">🔴 相思紅豆 (好人緣)</label>
-        </div>
-        <div>
-            <input type="checkbox" id="ing2" value="開運綠豆">
-            <label for="ing2" class="check-label">🟢 開運綠豆 (事業發)</label>
-        </div>
-        <div>
-            <input type="checkbox" id="ing3" value="長壽花生" checked>
-            <label for="ing3" class="check-label">🥜 長壽花生 (好運發生)</label>
-        </div>
-        <div>
-            <input type="checkbox" id="ing4" value="富貴栗子" checked>
-            <label for="ing4" class="check-label">🌰 富貴栗子 (立馬發財)</label>
-        </div>
-        <div>
-            <input type="checkbox" id="ing5" value="好運蓮子">
-            <label for="ing5" class="check-label">🪷 好運蓮子 (好運連連)</label>
-        </div>
-        <div>
-            <input type="checkbox" id="ing6" value="活力銀杏">
-            <label for="ing6" class="check-label">⚪ 活力銀杏 (腦袋靈光)</label>
-        </div>
-    </div>
-
-    <!-- 送出按鈕 -->
-    <button class="btn-send" id="sendBtn" onclick="processAndSend()" disabled>正在初始化賀卡系統...</button>
-    <div id="status">請在 LINE App 內開啟此網頁以獲得最佳體驗</div>
-</div>
-
-<script>
-    // 💡 請替換成您在 LINE Developers 申請的 LIFF ID
-    const MY_LIFF_ID = '2009826317-bfxoaTmF'; 
-
-    // 初始化 LIFF
-    liff.init({ liffId: MY_LIFF_ID })
-        .then(() => {
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('sendBtn').innerText = '🚀 封裝福氣！以 LINE 送出賀卡';
-            document.getElementById('status').innerText = 'LIFF 系統就緒，可以開始包粽子囉！';
-            
-            // 確保使用者登入才能使用 Share Target Picker
-            if (!liff.isLoggedIn()) {
-                liff.login();
+        async function initLIFF() {
+            try {
+                await liff.init({ liffId: MY_LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+            } catch (error) {
+                console.error("LIFF 初始化失敗", error);
             }
-        })
-        .catch((err) => {
-            console.error('LIFF 初始化失敗', err);
-            document.getElementById('status').innerText = '系統初始化失敗，請確認 LIFF ID 是否正確。';
-        });
-
-    // 核心邏輯：處理勾選內容並送出
-    function processAndSend() {
-        // 1. 取得米基底
-        const riceType = document.querySelector('input[name="rice"]:checked').value;
-        
-        // 2. 取得所有勾選的配料
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-        let ingredients = [];
-        checkboxes.forEach(cb => ingredients.push(cb.value));
-
-        if(ingredients.length === 0) {
-            alert("🧘 溫馨小提醒：粽子不能空心，請至少選擇一種配料！");
-            return;
         }
+        initLIFF();
 
-        // 3. 自動計算「禪意稱號」與「祝賀詞」
-        let title = `【${riceType}】`;
-        let blessing = "願您端午蔬福安康，日子甜如紅豆，好事接二連三『發生』！";
+        window.onload = function() {
+            const canvas = document.getElementById('pachinko');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const scoreEl = document.getElementById('score-val');
+            const timerEl = document.getElementById('timer-val');
+            const startBtn = document.getElementById('start-btn');
+            const overlay = document.getElementById('transition-overlay');
+            const terminal = document.getElementById('terminal-content');
 
-        if (ingredients.includes('長壽花生') && ingredients.includes('富貴栗子')) {
-            title += "「栗馬發財・好運發生」雙喜禪意粽";
-            blessing = "特製這顆富貴雙全粽送您！祝您今年財富『栗』馬發財，生活處處有好運『發生』，端午蔬福安康！";
-        } else if (ingredients.length >= 4) {
-            title += "「福祿壽喜・功德圓滿」全能五穀頂級粽";
-            blessing = "集結了滿滿五穀精華！吃下這顆粽，今年運勢大紅大紫，福氣、財運、健康通通圓滿！";
-        } else {
-            title += "「清心養生・法喜充滿」精進健康粽";
-            blessing = "送您一顆純粹的祝福。少點負擔、多點健康，願您這個端午節身心自在，法喜充滿！";
-        }
+            let gameState = 'READY'; 
+            let gameTime = 15;
+            let timerInterval;
+            let totalItemsCaught = 0;
+            
+            // 收集比例統計
+            let stats = { rice: 0, leaf: 0, yolk: 0, bug: 0 };
+            let items = [];
 
-        const ingredientsStr = ingredients.join('、');
+            const basket = {
+                x: canvas.width / 2 - 45,
+                y: canvas.height - 40,
+                width: 90,
+                height: 12,
+                color: '#10b981'
+            };
 
-        // 4. 呼叫 LINE Share Target Picker
-        if (liff.isApiAvailable('shareTargetPicker')) {
-            liff.shareTargetPicker([
-                {
-                    "type": "flex",
-                    "altText": "🫔 您收到了一顆來自好友的專屬端午福氣五穀粽！",
-                    "contents": {
-                        "type": "bubble",
-                        "hero": {
-                            "type": "image",
-                            "url": "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=800&q=80",
-                            "size": "full",
-                            "aspectRatio": "20:13",
-                            "aspectMode": "cover"
-                        },
-                        "body": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "contents": [
-                                {
-                                    "type": "text",
-                                    "text": "🧘 來自好友的端午蔬福外送",
-                                    "weight": "bold",
-                                    "size": "sm",
-                                    "color": "#2E7D32"
-                                },
-                                {
-                                    "type": "text",
-                                    "text": title,
-                                    "weight": "bold",
-                                    "size": "md",
-                                    "margin": "md",
-                                    "wrap": true,
-                                    "color": "#2C3E50"
-                                },
-                                {
-                                    "type": "box",
-                                    "layout": "vertical",
-                                    "margin": "lg",
-                                    "spacing": "sm",
-                                    "contents": [
-                                        {
-                                            "type": "box",
-                                            "layout": "baseline",
-                                            "spacing": "sm",
-                                            "contents": [
-                                                {
-                                                    "type": "text",
-                                                    "text": "福氣配料",
-                                                    "color": "#aaaaaa",
-                                                    "size": "xs",
-                                                    "flex": 2
-                                                },
-                                                {
-                                                    "type": "text",
-                                                    "text": ingredientsStr,
-                                                    "wrap": true,
-                                                    "color": "#666666",
-                                                    "size": "xs",
-                                                    "flex": 5
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "type": "box",
-                                            "layout": "baseline",
-                                            "spacing": "sm",
-                                            "contents": [
-                                                {
-                                                    "type": "text",
-                                                    "text": "開示祝賀",
-                                                    "color": "#aaaaaa",
-                                                    "size": "xs",
-                                                    "flex": 2
-                                                },
-                                                {
-                                                    "type": "text",
-                                                    "text": blessing,
-                                                    "wrap": true,
-                                                    "color": "#546E7A",
-                                                    "size": "xs",
-                                                    "flex": 5
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        "footer": {
-                            "type": "box",
-                            "layout": "vertical",
-                            "spacing": "sm",
-                            "contents": [
-                                {
-                                    "type": "button",
-                                    "style": "primary",
-                                    "color": "#2E7D32",
-                                    "action": {
-                                        "type": "uri",
-                                        "label": "我也要調配福氣粽送人",
-                                        "uri": "https://liff.line.me/" + MY_LIFF_ID
-                                    }
-                                }
-                            ],
-                            "flex": 0
-                        }
+            const ITEM_TYPES = [
+                { name: 'rice', color: '#e2e8f0', radius: 4, speed: 2.2, weight: 0.5 },
+                { name: 'leaf', color: '#10b981', radius: 6, speed: 2.6, weight: 0.25 },
+                { name: 'yolk', color: '#f59e0b', radius: 7, speed: 3.0, weight: 0.15 },
+                { name: 'bug', color: '#f43f5e', radius: 5, speed: 3.4, weight: 0.10 }
+            ];
+
+            // 滑鼠控制
+            canvas.addEventListener('mousemove', (e) => {
+                if (gameState !== 'PLAYING') return;
+                const rect = canvas.getBoundingClientRect();
+                basket.x = e.clientX - rect.left - basket.width / 2;
+                keepBasketInBounds();
+            });
+
+            // 觸控控制
+            canvas.addEventListener('touchmove', (e) => {
+                if (gameState !== 'PLAYING') return;
+                const rect = canvas.getBoundingClientRect();
+                basket.x = e.touches[0].clientX - rect.left - basket.width / 2;
+                keepBasketInBounds();
+                e.preventDefault();
+            }, { passive: false });
+
+            function keepBasketInBounds() {
+                if (basket.x < 0) basket.x = 0;
+                if (basket.x > canvas.width - basket.width) basket.x = canvas.width - basket.width;
+            }
+
+            function spawnItem() {
+                if (gameState !== 'PLAYING') return;
+                let rand = Math.random();
+                let selected = ITEM_TYPES[0];
+                let sum = 0;
+                for (let type of ITEM_TYPES) {
+                    sum += type.weight;
+                    if (rand <= sum) { selected = type; break; }
+                }
+                items.push({
+                    x: Math.random() * (canvas.width - 30) + 15,
+                    y: 0,
+                    ...selected
+                });
+            }
+
+            function startTimer() {
+                timerInterval = setInterval(() => {
+                    gameTime--;
+                    timerEl.textContent = gameTime + "s";
+                    if (gameTime <= 0) {
+                        clearInterval(timerInterval);
+                        triggerTransition();
+                    }
+                }, 1000);
+            }
+
+            // 轉場
+            function triggerTransition() {
+                gameState = 'FINISHED';
+                canvas.style.filter = 'blur(6px)';
+                overlay.style.display = 'flex';
+
+                const lines = [
+                    "[System_Cat] 🐾 倒數結束。主廚喵喵在鍵盤旁伸了個懶腰。",
+                    "[System_Cat] 🐾 正在封裝剛才收集的節氣食材與祝福微粒...",
+                    "[System_Cat] 🐾 慢火蒸煮中，空氣裡多了一點竹葉的清香。",
+                    "====================================",
+                    "[SUCCESS]: 專屬「端午喵喵歲時御守」編譯完成，即將為您傳送。"
+                ];
+
+                let currentLine = 0;
+                function printLog() {
+                    if (currentLine < lines.length) {
+                        const div = document.createElement('div');
+                        div.className = 'typing-line';
+                        div.textContent = lines[currentLine];
+                        div.style.animation = 'fadeIn 0.4s forwards';
+                        terminal.appendChild(div);
+                        currentLine++;
+                        setTimeout(printLog, 700); // 簡潔流暢的行間停頓
+                    } else {
+                        setTimeout(sendFlexMessage, 1200); // 動態播完，準備送出卡片
                     }
                 }
-            ])
-            .then((res) => {
-                if (res) {
-                    alert("🎉 福氣粽已成功送出！功德+1");
-                } else {
-                    console.log("使用者取消傳送");
-                }
-            })
-            .catch((err) => {
-                console.error("傳送失敗", err);
-                alert("傳送失敗，請確認是否在 LINE 環境內執行。");
-            });
-        } else {
-            alert("目前環境不支援 Share Target Picker，請用 LINE 開啟此網頁喔！");
-        }
-    }
-</script>
+                printLog();
+            }
 
+            // 根據收集比例，打包成清爽體貼的 Flex Message 送出
+            function sendFlexMessage() {
+                // 計算主要偏向哪種食材
+                let resultTitle = "適時離線，啟動個人的專屬防火牆";
+                let resultDesc = "外面的世界很忙、雜音很多。學學喵喵，適時掛上請勿打擾，給自己一個安靜的空間隔絕喧囂。好好睡一覺，身心值得被溫柔防護。願您步調自在。";
+
+                if (stats.yolk >= stats.leaf && stats.yolk >= stats.rice) {
+                    resultTitle = "衝刺的同時，記得保持系統回穩";
+                    resultDesc = "最近的生活過得充實且極度努力。但盛夏初到，過度衝刺容易心火浮躁。下半年追求目標時，別忘了隨時停下來喝口水、伸個懶腰。適時留白，生活才能走得更長遠。";
+                } else if (stats.rice >= stats.leaf && stats.rice >= stats.yolk) {
+                    resultTitle = "專注當下，現在的節奏就很好";
+                    resultDesc = "糯米健脾胃，是所有經典風味的起點。默默把基礎打好，踏實過好每一天。根基穩固，外邪不入，專注生活本身就是最迷人的防禦美學。";
+                }
+
+                const flexData = {
+                    type: "bubble",
+                    body: {
+                        type: "box",
+                        layout: "vertical",
+                        backgroundColor: "#0f141c",
+                        paddingAll: "20px",
+                        contents: [
+                            { type: "text", text: "🫔 端午歲時・身心御守", weight: "bold", color: "#10b981", size: "sm", letterSpacing: "1px" },
+                            { type: "text", text: resultTitle, weight: "bold", size: "lg", margin: "md", color: "#e2e8f0", wrap: true },
+                            { type: "separator", margin: "lg", color: "#2e3d52" },
+                            {
+                                type: "box", layout: "vertical", margin: "lg", spacing: "sm",
+                                contents: [
+                                    {
+                                        type: "box", layout: "horizontal",
+                                        contents: [
+                                            { type: "text", text: "基礎紮實度", size: "xs", color: "#64748b" },
+                                            { type: "text", text: `${stats.rice * 10}%`, size: "xs", color: "#34d399", align: "end" }
+                                        ]
+                                    },
+                                    {
+                                        type: "box", layout: "horizontal",
+                                        contents: [
+                                            { type: "text", text: "環境抗噪力", size: "xs", color: "#64748b" },
+                                            { type: "text", text: `${stats.leaf * 10}%`, size: "xs", color: "#34d399", align: "end" }
+                                        ]
+                                    }
+                                ]
+                            },
+                            { type: "separator", margin: "lg", color: "#2e3d52" },
+                            { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true, lineSpacing: "1.6" },
+                            { type: "text", text: "🐾 System_Cat 靜靜陪伴 ｜ 端午安康", margin: "xxl", size: "xs", color: "#64748b", fontStyle: "italic" }
+                        ]
+                    }
+                };
+
+                // 呼叫 LINE Share Target Picker
+                if (liff.isApiAvailable('shareTargetPicker')) {
+                    liff.shareTargetPicker([{
+                        type: "flex",
+                        altText: "收到了來自端午歲時的身心防禦御守",
+                        contents: flexData
+                    }]).then(() => {
+                        liff.closeWindow(); // 完美傳送後，秒關網頁
+                    }).catch((err) => {
+                        console.error("傳送失敗或使用者取消", err);
+                        liff.closeWindow();
+                    });
+                } else {
+                    alert("請在 LINE 環境中執行以發送賀卡");
+                }
+            }
+
+            function gameLoop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 繪製簡約容器 (碗)
+                ctx.fillStyle = basket.color;
+                ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+
+                if (gameState === 'PLAYING') {
+                    if (Math.random() < 0.09) spawnItem();
+
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        let item = items[i];
+                        item.y += item.speed;
+
+                        ctx.beginPath();
+                        ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = item.color;
+                        ctx.fill();
+                        ctx.closePath();
+
+                        // 碗接食材的物理範圍判定
+                        if (item.y >= basket.y && item.y <= basket.y + basket.height &&
+                            item.x >= basket.x && item.x <= basket.x + basket.width) {
+                            
+                            stats[item.name]++;
+                            if (item.name !== 'bug') {
+                                totalItemsCaught++;
+                                scoreEl.textContent = totalItemsCaught;
+                            }
+                            items.splice(i, 1);
+                            continue;
+                        }
+
+                        if (item.y > canvas.height) { items.splice(i, 1); }
+                    }
+                }
+
+                // 裝飾用非遊戲中提示
+                if (gameState === 'READY') {
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '13px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⚡ 準備就緒，點擊右側按鈕開始 ⚡', canvas.width / 2, canvas.height / 2);
+                }
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    if (gameState !== 'READY') return;
+                    gameState = 'PLAYING';
+                    startBtn.style.opacity = '0.4';
+                    startBtn.style.pointerEvents = 'none';
+                    startTimer();
+                });
+            }
+
+            gameLoop();
+        };
+    </script>
 </body>
 </html>
