@@ -384,7 +384,9 @@
                         console.error("傳送失敗或取消", err);
                         liff.closeWindow();
                     });
-                } // 💻 如果是電腦版或外部瀏覽器，嘗試直接發送訊息到當前聊天室
+                } 
+                    // 如果要開放PC使用：電腦版或外部瀏覽器，嘗試直接發送訊息到當前聊天室
+                    /*
                 else if (liff.isInClient()) {
                     liff.sendMessages([{
                         type: "flex",
@@ -396,9 +398,10 @@
                         console.error("電腦版發送失敗", err);
                         alert("傳送失敗，請確保是在 LINE 聊天室中開啟此應用。");
                     });
-                }                
+                }
+                */                
                 else {
-                    alert("請從 LINE 聊天室內開啟網頁，才能發送賀卡喔！");
+                    alert("請從手機的 LINE 聊天室內開啟網頁，才能傳送賀卡喔！");
                 }
             }
 
