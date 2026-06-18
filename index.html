@@ -252,6 +252,7 @@
                         div.className = 'typing-line';
                         div.textContent = lines[currentLine];
                         div.style.animation = 'fadeIn 0.4s forwards';
+                        div.style.animation = 'fadeIn 0.4s forwards';
                         terminal.appendChild(div);
                         currentLine++;
                         setTimeout(printLog, 600); 
@@ -268,68 +269,86 @@
 
                 // 🌟 6種結果判斷邏輯
                 if (stats.bug >= 5) {
-                    // 分支 1：五毒過多（環境干擾重）
                     resultTitle = "淨化環境雜音，重啟核心安全防火牆";
                     resultDesc = "收集到了較多的五毒微粒。這代表外面的世界最近有點太吵，干擾了您的步調。提醒您：適時清理環境雜訊，刪掉不必要的社交與負面訊息，把能量留給自己，重新找回清爽的內部防禦線。";
                 } else if (totalItemsCaught < 5) {
-                    // 分支 2：低度收集（佛系掛機）
                     resultTitle = "隨緣慢活，享受個人的極簡留白";
                     resultDesc = "生活不一定要隨時塞滿各類指標。選擇用最舒適、不慌不忙的節奏走完這 15 秒。以一種不隨波逐流的淡定&從容的步調，自在的姿態笑看人間盛夏風雲。";
                 } else if (stats.rice > 0 && stats.leaf > 0 && stats.yolk > 0 && totalItemsCaught >= 15) {
-                    // 分支 3：完美大滿貫（三大食材都有，且分數高）
                     resultTitle = "五行調和，全系統防禦指標最大化";
                     resultDesc = "太厲害了！糯米、粽葉與蛋黃全部完美封裝，無一缺漏。這意味著此刻的身心狀態正面臨完美的平衡與升級。根基穩固、抗噪點滿、核心飽滿，已經準備好迎接未來的任何挑戰，萬事皆安康！";
                 } else if (stats.yolk >= stats.leaf && stats.yolk >= stats.rice) {
-                    // 分支 4：蛋黃最多
                     resultTitle = "衝刺追求核心，但也別忘讓系統回穩";
                     resultDesc = "最近的生活過得充實且極度努力，像金黃的蛋黃一樣全力發光。但盛夏初到，過度衝刺容易讓心火有些浮躁。下半年追求目標時，別忘了適時停下來喝口水、伸個懶腰。適時留白更長遠。";
                 } else if (stats.rice >= stats.leaf && stats.rice >= stats.yolk) {
-                    // 分支 5：糯米最多
                     resultTitle = "專注當下，踏實平穩就是最高美學";
                     resultDesc = "糯米健脾胃，是一切經典風味的起點。默默把最基礎的底氣打好，踏實過好每一天。當根基足夠穩固，外在的邪氣雜音自然無法入侵。專注於當下的生活本身，就是最迷人的防禦狀態。";
                 } else {
-                    // 分支 6：粽葉最多
                     resultTitle = "適時防禦離線，啟動個人的請勿打擾";
-                    resultDesc = "外面的世界很忙、變動很快，暫時選擇用層層翠綠的粽葉將自己溫柔包裹。學學喵喵，適時對外界掛上「請勿打擾」，給自己一個安靜的空間隔絕所有喧囂。好好吃頓飯、睡個覺，每個人都值得被溫柔防護。";
+                    resultDesc = "外面的世界很忙、變動很快，暫時選擇用層層翠綠的粽葉將自己溫源包裹。學學喵喵，適時對外界掛上「請勿打擾」，給自己一個安靜的空間隔絕所有喧囂。好好吃頓飯、睡個覺，每個人都值得被溫柔防護。";
                 }
 
                 const displayRice = String(stats.rice);
                 const displayLeaf = String(stats.leaf);
                 const liffUrl = `https://liff.line.me/${MY_LIFF_ID}`;
 
+                // 🚀 重新設計的 Flex Message JSON 結構 (完美結合龍舟喵喵圖片與原本的資訊)
                 const flexData = {
                     type: "bubble",
                     body: {
                         type: "box",
                         layout: "vertical",
                         backgroundColor: "#0f141c",
-                        paddingAll: "20px",
+                        paddingAll: "0px", // 改成 0px 讓圖片能左右滿版
                         contents: [
-                            { type: "text", text: "🫔 端午歲時・身心御守", weight: "bold", color: "#10b981", size: "sm" },
-                            { type: "text", text: resultTitle, weight: "bold", size: "md", margin: "md", color: "#e2e8f0", wrap: true },
-                            { type: "separator", margin: "lg", color: "#2e3d52" },
                             {
-                                type: "box", layout: "vertical", margin: "lg", spacing: "sm",
+                                type: "box",
+                                layout: "vertical",
+                                paddingAll: "20px",
+                                paddingBottom: "0px",
                                 contents: [
-                                    {
-                                        type: "box", layout: "horizontal",
-                                        contents: [
-                                            { type: "text", text: "基礎封裝量 (Rice)", size: "xs", color: "#64748b" },
-                                            { type: "text", text: displayRice + " units", size: "xs", color: "#34d399", align: "end" }
-                                        ]
-                                    },
-                                    {
-                                        type: "box", layout: "horizontal",
-                                        contents: [
-                                            { type: "text", text: "環境抗噪值 (Leaf)", size: "xs", color: "#64748b" },
-                                            { type: "text", text: displayLeaf + " layers", size: "xs", color: "#34d399", align: "end" }
-                                        ]
-                                    }
+                                    { type: "text", text: "🍃 端午歲時・身心御守", weight: "bold", color: "#10b981", size: "sm" },
+                                    { type: "text", text: resultTitle, weight: "bold", size: "md", margin: "md", color: "#e2e8f0", wrap: true }
                                 ]
                             },
-                            { type: "separator", margin: "lg", color: "#2e3d52" },
-                            { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true },
-                            { type: "text", text: "🐾 Happy Dragon Boat Festival 🐾", margin: "xxl", size: "xs", color: "#64748b" }
+                            {
+                                type: "image",
+                                url: "dragonBoat2.jpg", // 讀取 GitHub 根目錄的圖片路徑
+                                size: "full",
+                                aspectMode: "cover",
+                                aspectRatio: "1.5:1", // 配合圖片比例優化
+                                margin: "md"
+                            },
+                            {
+                                type: "box",
+                                layout: "vertical",
+                                paddingAll: "20px",
+                                paddingTop: "15px",
+                                contents: [
+                                    {
+                                        type: "box", layout: "vertical", spacing: "sm",
+                                        contents: [
+                                            {
+                                                type: "box", layout: "horizontal",
+                                                contents: [
+                                                    { type: "text", text: "基礎封裝量 (Rice)", size: "xs", color: "#64748b" },
+                                                    { type: "text", text: displayRice + " units", size: "xs", color: "#34d399", align: "end" }
+                                                ]
+                                            },
+                                            {
+                                                type: "box", layout: "horizontal",
+                                                contents: [
+                                                    { type: "text", text: "環境抗噪值 (Leaf)", size: "xs", color: "#64748b" },
+                                                    { type: "text", text: displayLeaf + " layers", size: "xs", color: "#34d399", align: "end" }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    { type: "separator", margin: "lg", color: "#2e3d52" },
+                                    { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true },
+                                    { type: "text", text: "🐾 Happy Dragon Boat Festival 🐾", margin: "xxl", size: "xs", color: "#64748b" }
+                                ]
+                            }
                         ]
                     },
                     footer: {
