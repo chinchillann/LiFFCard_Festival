@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>端午歲時・身心御守粽</title>
-    <!-- 引入 LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -73,7 +72,7 @@
             h2 { font-size: 15px; margin: 0; text-align: center; }
             .desc { display: none; } /* 隱藏原本側邊長文案 */
             
-            /* 📱 啟用手機端專用、精簡不吃高度的頂部教學區 */
+            /* 啟用手機端、精簡不吃高度的頂部教學區 */
             .mobile-instruction {
                 display: block;
                 text-align: center;
@@ -102,24 +101,19 @@
 <body>
 
     <div class="game-container">
-        <!-- 轉場視窗 -->
         <div id="transition-overlay">
             <div class="terminal-box" id="terminal-content"></div>
         </div>
 
-        <!-- 📱 手機專用頂部操作教學說明 -->
         <div class="mobile-instruction">
             ☝️ <b>左右滑動手指</b> 操控下方主廚喵喵<br>⏰ 在 <b>15 秒內</b> 收集落下的食材與微粒製作御守！
         </div>
 
-        <!-- 遊戲主舞台 -->
         <canvas id="pachinko" width="380" height="420"></canvas>
         
-        <!-- 數據控制台 -->
         <div class="dashboard">
             <div>
                 <h2>🌿 歲時身心防禦編譯</h2>
-                <!-- 🖥️ 電腦版看到的完整說明 -->
                 <div class="desc">移動底部的中央容器，在 15 秒內收集落下的節氣食材與祝福微粒，製作專屬的端午御守。</div>
                 
                 <div class="stats-wrapper">
@@ -244,11 +238,11 @@
                 overlay.style.display = 'flex';
 
                 const lines = [
-                    "[System_Cat] 🐾 倒數結束。主廚喵喵在鍵盤旁伸了個懶腰。",
-                    "[System_Cat] 🐾 正在封裝剛才收集的節氣食材與祝福微粒...",
-                    "[System_Cat] 🐾 慢火蒸煮中，空氣裡多了一點竹葉的清香。",
+                    "[chinchillann] 🐾 倒數結束。主廚喵喵在鍵盤旁伸了個懶腰。",
+                    "[chinchillann] 🐾 正在封裝剛才收集的節氣食材與祝福微粒...",
+                    "[chinchillann] 🐾 慢火蒸煮中，空氣裡多了一點竹葉的清香。",
                     "====================================",
-                    "[SUCCESS]: 專屬「端午喵喵歲時御守」編譯完成，即將為您傳送。"
+                    "[SUCCESS]: 專屬個人的「端午歲時御守」制作完成，即將為您傳送。"
                 ];
 
                 let currentLine = 0;
@@ -269,15 +263,34 @@
             }
 
             function sendFlexMessage() {
-                let resultTitle = "適時離線，啟動個人的專屬防火牆";
-                let resultDesc = "外面的世界很忙、雜音很多。學學喵喵，適時掛上請勿打擾，給自己一個安靜的空間隔絕喧囂。好好睡一覺，身心值得被溫柔防護。願您步調自在。";
+                let resultTitle = "";
+                let resultDesc = "";
 
-                if (stats.yolk >= stats.leaf && stats.yolk >= stats.rice) {
-                    resultTitle = "衝刺的同時，記得保持系統回穩";
-                    resultDesc = "最近的生活過得充實且極度努力。但盛夏初到，過度衝刺容易心火浮躁。下半年追求目標時，別忘了隨時停下來喝口水、伸個懶腰。適時留白，生活才能走得更長遠。";
+                // 🌟 6種結果判斷邏輯
+                if (stats.bug >= 5) {
+                    // 分支 1：五毒過多（環境干擾重）
+                    resultTitle = "淨化環境雜音，重啟核心安全防火牆";
+                    resultDesc = "收集到了較多的五毒微粒。這代表外面的世界最近有點太吵，干擾了您的步調。提醒您：適時清理環境雜訊，刪掉不必要的社交與負面訊息，把能量留給自己，重新找回清爽的內部防禦線。";
+                } else if (totalItemsCaught < 5) {
+                    // 分支 2：低度收集（佛系掛機）
+                    resultTitle = "隨緣慢活，享受個人的極簡留白";
+                    resultDesc = "生活不一定要隨時塞滿各類指標。選擇用最舒適、不慌不忙的節奏走完這 15 秒。以一種不隨波逐流的淡定&從容的步調，自在的姿態笑看人間盛夏風雲。";
+                } else if (stats.rice > 0 && stats.leaf > 0 && stats.yolk > 0 && totalItemsCaught >= 15) {
+                    // 分支 3：完美大滿貫（三大食材都有，且分數高）
+                    resultTitle = "五行調和，全系統防禦指標最大化";
+                    resultDesc = "太厲害了！糯米、粽葉與蛋黃全部完美封裝，無一缺漏。這意味著此刻的身心狀態正面臨完美的平衡與升級。根基穩固、抗噪點滿、核心飽滿，已經準備好迎接未來的任何挑戰，萬事皆安康！";
+                } else if (stats.yolk >= stats.leaf && stats.yolk >= stats.rice) {
+                    // 分支 4：蛋黃最多
+                    resultTitle = "衝刺追求核心，但也別忘讓系統回穩";
+                    resultDesc = "最近的生活過得充實且極度努力，像金黃的蛋黃一樣全力發光。但盛夏初到，過度衝刺容易讓心火有些浮躁。下半年追求目標時，別忘了適時停下來喝口水、伸個懶腰。適時留白更長遠。";
                 } else if (stats.rice >= stats.leaf && stats.rice >= stats.yolk) {
-                    resultTitle = "專注當下，現在的節奏就很好";
-                    resultDesc = "糯米健脾胃，是所有經典風味的起點。默默把基礎打好，踏實過好每一天。根基穩固，外邪不入，專注生活本身就是最迷人的防禦美學。";
+                    // 分支 5：糯米最多
+                    resultTitle = "專注當下，踏實平穩就是最高美學";
+                    resultDesc = "糯米健脾胃，是一切經典風味的起點。默默把最基礎的底氣打好，踏實過好每一天。當根基足夠穩固，外在的邪氣雜音自然無法入侵。專注於當下的生活本身，就是最迷人的防禦狀態。";
+                } else {
+                    // 分支 6：粽葉最多
+                    resultTitle = "適時防禦離線，啟動個人的請勿打擾";
+                    resultDesc = "外面的世界很忙、變動很快，暫時選擇用層層翠綠的粽葉將自己溫柔包裹。學學喵喵，適時對外界掛上「請勿打擾」，給自己一個安靜的空間隔絕所有喧囂。好好吃頓飯、睡個覺，每個人都值得被溫柔防護。";
                 }
 
                 const displayRice = String(stats.rice);
@@ -316,7 +329,7 @@
                             },
                             { type: "separator", margin: "lg", color: "#2e3d52" },
                             { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true },
-                            { type: "text", text: "🐾 System_Cat 靜靜陪伴 ｜ 端午安康", margin: "xxl", size: "xs", color: "#64748b" }
+                            { type: "text", text: "🐾 Happy Dragon Boat Festival 🐾", margin: "xxl", size: "xs", color: "#64748b" }
                         ]
                     },
                     footer: {
@@ -330,7 +343,7 @@
                                 type: "button",
                                 action: {
                                     type: "uri",
-                                    label: "⚡ 點這裡制作御守粽",
+                                    label: "⚡ 點這裡製作御守粽",
                                     uri: liffUrl
                                 },
                                 style: "primary",
@@ -357,7 +370,7 @@
                 }
             }
 
-            // 動態手繪：貓咪主廚高舉貓碗
+            // 動態手繪：舒安高舉貓碗
             function drawCatChef(bx, by, bw, bh) {
                 let centerX = bx + bw / 2;
 
