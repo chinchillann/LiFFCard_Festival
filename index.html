@@ -12,7 +12,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-height: 100vh; 
-            /* 防止手機畫面上滑下拉的橡皮筋效果影響遊戲 */
             overflow: hidden; 
             touch-action: none;
         }
@@ -55,39 +54,38 @@
         }
         @keyframes fadeIn { to { opacity: 1 } }
 
-        /* 📱 RWD 行動裝置主場優化 (螢幕寬度小於 650px) */
+        /* 📱 針對手機端 (RWD) 重新設計的防擠壓、防超出佈局 */
         @media (max-width: 650px) {
-            body { justify-content: flex-start; padding: 10px 0; overflow-y: auto; }
+            body { justify-content: center; padding: 5px; }
             .game-container {
                 flex-direction: column;
-                padding: 12px;
-                gap: 12px;
+                padding: 10px;
+                gap: 8px;
                 width: 95vw;
-                max-width: 400px; /* 控制在單手好操作的寬度 */
+                max-width: 390px;
+                max-height: 98vh; /* 嚴格限制在螢幕高度內 */
+                justify-content: center;
             }
-            canvas {
-                width: 100%;
-                height: auto; /* 等比例縮放高度 */
-            }
+            /* 將文字、狀態移到 Canvas 上方與下方，騰出空間給按鈕 */
             .dashboard {
                 width: 100%;
-                flex-direction: column;
-                gap: 10px;
             }
-            .desc { margin-bottom: 10px; font-size: 12px; }
-            /* 讓兩個數據方塊在手機上橫向並排，節省空間 */
+            h2 { font-size: 15px; margin: 0; text-align: center; }
+            .desc { display: none; } /* 手機端隱藏冗長描述節省高度 */
+            
             .stats-wrapper {
                 display: flex;
-                gap: 10px;
+                gap: 8px;
+                margin-top: 4px;
             }
-            .stat-box { margin-bottom: 0; padding: 8px 12px; }
-            .stat-value { font-size: 20px; }
+            .stat-box { padding: 6px 10px; }
+            .stat-value { font-size: 18px; }
             .legend { 
-                margin-top: 5px; padding-top: 10px;
+                margin-top: 6px; padding-top: 6px;
                 display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
             }
-            .legend-item { margin-bottom: 4px; }
-            .btn-action { padding: 12px; margin-top: 5px; }
+            .legend-item { margin-bottom: 0; font-size: 11px; }
+            .btn-action { padding: 12px; margin-top: 6px; font-size: 13px; }
         }
     </style>
 </head>
@@ -98,20 +96,23 @@
             <div class="terminal-box" id="terminal-content"></div>
         </div>
 
-        <canvas id="pachinko" width="380" height="520"></canvas>
-        <div class="dashboard">
+        <div class="mobile-header" style="display: none;">
+            <h2>🌿 歲時身心防禦編譯</h2>
+        </div>
+
+        <canvas id="pachinko" width="380" height="420"></canvas> <div class="dashboard">
             <div>
-                <h2>🌿 歲時身心防禦編譯</h2>
+                <h2 class="desktop-title">🌿 歲時身心防禦編譯</h2>
                 <div class="desc">移動底部的中央容器，在 15 秒內收集落下的節氣食材與祝福微粒，制作專屬的端午御守。</div>
                 
                 <div class="stats-wrapper">
                     <div class="stat-box">
-                        <div class="stat-label">倒數計時 (Timer)</div>
+                        <div class="stat-label">倒數計時</div>
                         <div class="stat-value" id="timer-val" style="color: #f59e0b;">15s</div>
                     </div>
                     
                     <div class="stat-box">
-                        <div class="stat-label">已封裝食材 (Ingredients)</div>
+                        <div class="stat-label">已封裝食材</div>
                         <div class="stat-value" id="score-val">0</div>
                     </div>
                 </div>
@@ -158,40 +159,36 @@
             let timerInterval;
             let totalItemsCaught = 0;
             
-            // 收集比例統計
             let stats = { rice: 0, leaf: 0, yolk: 0, bug: 0 };
             let items = [];
 
             const basket = {
                 x: canvas.width / 2 - 45,
-                y: canvas.height - 40,
+                y: canvas.height - 30,
                 width: 90,
                 height: 12,
                 color: '#10b981'
             };
 
             const ITEM_TYPES = [
-                { name: 'rice', color: '#e2e8f0', radius: 4, speed: 2.2, weight: 0.5 },
-                { name: 'leaf', color: '#10b981', radius: 6, speed: 2.6, weight: 0.25 },
-                { name: 'yolk', color: '#f59e0b', radius: 7, speed: 3.0, weight: 0.15 },
-                { name: 'bug', color: '#f43f5e', radius: 5, speed: 3.4, weight: 0.10 }
+                { name: 'rice', color: '#e2e8f0', radius: 4, speed: 2.5, weight: 0.5 },
+                { name: 'leaf', color: '#10b981', radius: 6, speed: 2.8, weight: 0.25 },
+                { name: 'yolk', color: '#f59e0b', radius: 7, speed: 3.2, weight: 0.15 },
+                { name: 'bug', color: '#f43f5e', radius: 5, speed: 3.5, weight: 0.10 }
             ];
 
-            // 取得觸控或滑鼠相對於 Canvas 實際渲染比例的 X 座標
+            // RWD 適配下的觸控 X 座標換算
             function getCanvasX(clientX) {
                 const rect = canvas.getBoundingClientRect();
-                // 考量到 CSS 可能對 Canvas 進行了縮放 (例如手機上 width 變小了)
                 return (clientX - rect.left) * (canvas.width / rect.width);
             }
 
-            // 滑鼠控制
             canvas.addEventListener('mousemove', (e) => {
                 if (gameState !== 'PLAYING') return;
                 basket.x = getCanvasX(e.clientX) - basket.width / 2;
                 keepBasketInBounds();
             });
 
-            // 觸控控制
             canvas.addEventListener('touchmove', (e) => {
                 if (gameState !== 'PLAYING') return;
                 basket.x = getCanvasX(e.touches[0].clientX) - basket.width / 2;
@@ -231,7 +228,7 @@
                 }, 1000);
             }
 
-            // 轉場
+            // 轉場文字浮現
             function triggerTransition() {
                 gameState = 'FINISHED';
                 canvas.style.filter = 'blur(6px)';
@@ -254,18 +251,20 @@
                         div.style.animation = 'fadeIn 0.4s forwards';
                         terminal.appendChild(div);
                         currentLine++;
-                        setTimeout(printLog, 700); 
+                        setTimeout(printLog, 600); 
                     } else {
-                        setTimeout(sendFlexMessage, 1200); 
+                        setTimeout(sendFlexMessage, 1000); 
                     }
                 }
                 printLog();
             }
 
+            // 安全打包 Flex Message 並發送
             function sendFlexMessage() {
                 let resultTitle = "適時離線，啟動個人的專屬防火牆";
                 let resultDesc = "外面的世界很忙、雜音很多。學學喵喵，適時掛上請勿打擾，給自己一個安靜的空間隔絕喧囂。好好睡一覺，身心值得被溫柔防護。願您步調自在。";
 
+                // 優化食材比重判斷機制
                 if (stats.yolk >= stats.leaf && stats.yolk >= stats.rice) {
                     resultTitle = "衝刺的同時，記得保持系統回穩";
                     resultDesc = "最近的生活過得充實且極度努力。但盛夏初到，過度衝刺容易心火浮躁。下半年追求目標時，別忘了隨時停下來喝口水、伸個懶腰。適時留白，生活才能走得更長遠。";
@@ -273,6 +272,10 @@
                     resultTitle = "專注當下，現在的節奏就很好";
                     resultDesc = "糯米健脾胃，是所有經典風味的起點。默默把基礎打好，踏實過好每一天。根基穩固，外邪不入，專注生活本身就是最迷人的防禦美學。";
                 }
+
+                // 將數值安全轉換為合法、不溢出的展示文字
+                const displayRice = String(stats.rice);
+                const displayLeaf = String(stats.leaf);
 
                 const flexData = {
                     type: "bubble",
@@ -282,8 +285,8 @@
                         backgroundColor: "#0f141c",
                         paddingAll: "20px",
                         contents: [
-                            { type: "text", text: "🫔 端午歲時・身心御守", weight: "bold", color: "#10b981", size: "sm", letterSpacing: "1px" },
-                            { type: "text", text: resultTitle, weight: "bold", size: "lg", margin: "md", color: "#e2e8f0", wrap: true },
+                            { type: "text", text: "🫔 端午歲時・身心御守", weight: "bold", color: "#10b981", size: "sm" },
+                            { type: "text", text: resultTitle, weight: "bold", size: "md", margin: "md", color: "#e2e8f0", wrap: true },
                             { type: "separator", margin: "lg", color: "#2e3d52" },
                             {
                                 type: "box", layout: "vertical", margin: "lg", spacing: "sm",
@@ -291,26 +294,27 @@
                                     {
                                         type: "box", layout: "horizontal",
                                         contents: [
-                                            { type: "text", text: "基礎紮實度", size: "xs", color: "#64748b" },
-                                            { type: "text", text: `${stats.rice * 10}%`, size: "xs", color: "#34d399", align: "end" }
+                                            { type: "text", text: "基礎封裝量 (Rice)", size: "xs", color: "#64748b" },
+                                            { type: "text", text: displayRice + " units", size: "xs", color: "#34d399", align: "end" }
                                         ]
                                     },
                                     {
                                         type: "box", layout: "horizontal",
                                         contents: [
-                                            { type: "text", text: "環境抗噪力", size: "xs", color: "#64748b" },
-                                            { type: "text", text: `${stats.leaf * 10}%`, size: "xs", color: "#34d399", align: "end" }
+                                            { type: "text", text: "環境抗噪值 (Leaf)", size: "xs", color: "#64748b" },
+                                            { type: "text", text: displayLeaf + " layers", size: "xs", color: "#34d399", align: "end" }
                                         ]
                                     }
                                 ]
                             },
                             { type: "separator", margin: "lg", color: "#2e3d52" },
-                            { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true, lineSpacing: "1.6" },
-                            { type: "text", text: "🐾 System_Cat 靜靜陪伴 ｜ 端午安康", margin: "xxl", size: "xs", color: "#64748b", fontStyle: "italic" }
+                            { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true },
+                            { type: "text", text: "🐾 System_Cat 靜靜陪伴 ｜ 端午安康", margin: "xxl", size: "xs", color: "#64748b" }
                         ]
                     }
                 };
 
+                // 呼叫 LINE Share Target Picker
                 if (liff.isApiAvailable('shareTargetPicker')) {
                     liff.shareTargetPicker([{
                         type: "flex",
@@ -319,11 +323,11 @@
                     }]).then(() => {
                         liff.closeWindow(); 
                     }).catch((err) => {
-                        console.error("傳送失敗或使用者取消", err);
+                        console.error("傳送失敗或取消", err);
                         liff.closeWindow();
                     });
                 } else {
-                    alert("請在 LINE 環境中執行以發送賀卡");
+                    alert("請在 LINE App 內開啟此網頁方能分享賀卡。");
                 }
             }
 
@@ -366,7 +370,7 @@
                     ctx.fillStyle = '#64748b';
                     ctx.font = '13px sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('⚡ 準備就緒，點擊按鈕開始 ⚡', canvas.width / 2, canvas.height / 2);
+                    ctx.fillText('⚡ 準備就緒，點擊下方按鈕開始 ⚡', canvas.width / 2, canvas.height / 2);
                 }
 
                 requestAnimationFrame(gameLoop);
