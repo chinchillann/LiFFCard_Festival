@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>制作專屬的端午御守</title>
+    <title>端午歲時・身心御守粽</title>
+    <!-- 引入 LINE LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -33,6 +34,9 @@
         .legend-item { display: flex; align-items: center; margin-bottom: 8px; color: #94a3b8; white-space: nowrap; }
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
         
+        /* 手機端專用頂部操作提示欄（預設在電腦版不顯示） */
+        .mobile-instruction { display: none; }
+
         /* 按鈕與遮罩控制 */
         .btn-action { background: #10b981; color: #090d16; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 14px; width: 100%; }
         .btn-action:hover { background: #34d399; }
@@ -54,21 +58,35 @@
         }
         @keyframes fadeIn { to { opacity: 1 } }
 
-        /* 📱 手機端 RWD 最佳化佈局（防止物件超出螢幕、確保點得到按鈕） */
+        /* 📱 手機端 RWD 佈局優化 */
         @media (max-width: 650px) {
             body { justify-content: center; padding: 5px; }
             .game-container {
                 flex-direction: column;
                 padding: 10px;
-                gap: 8px;
+                gap: 6px;
                 width: 95vw;
                 max-width: 390px;
                 max-height: 98vh;
             }
             .dashboard { width: 100%; }
             h2 { font-size: 15px; margin: 0; text-align: center; }
-            .desc { display: none; } /* 行動裝置上隱藏長文案騰出垂直空間 */
+            .desc { display: none; } /* 隱藏原本側邊長文案 */
             
+            /* 📱 啟用手機端專用、精簡不吃高度的頂部教學區 */
+            .mobile-instruction {
+                display: block;
+                text-align: center;
+                font-size: 12px;
+                color: #a3e635; /* 顯眼的萊姆綠提示 */
+                background: #0d131f;
+                padding: 6px;
+                border-radius: 6px;
+                border: 1px dashed #2e3d52;
+                margin-bottom: 2px;
+                line-height: 1.4;
+            }
+
             .stats-wrapper { display: flex; gap: 8px; margin-top: 4px; }
             .stat-box { padding: 6px 10px; }
             .stat-value { font-size: 18px; }
@@ -84,16 +102,25 @@
 <body>
 
     <div class="game-container">
+        <!-- 轉場視窗 -->
         <div id="transition-overlay">
             <div class="terminal-box" id="terminal-content"></div>
         </div>
 
+        <!-- 📱 手機專用頂部操作教學說明 -->
+        <div class="mobile-instruction">
+            ☝️ <b>左右滑動手指</b> 操控下方主廚喵喵<br>⏰ 在 <b>15 秒內</b> 收集落下的食材與微粒製作御守！
+        </div>
+
+        <!-- 遊戲主舞台 -->
         <canvas id="pachinko" width="380" height="420"></canvas>
         
+        <!-- 數據控制台 -->
         <div class="dashboard">
             <div>
-                <h2>🌿 歲時身心防禦制作</h2>
-                <div class="desc">移動底部的中央容器，在 15 秒內收集落下的節氣食材與祝福微粒，制作專屬的端午御守。</div>
+                <h2>🌿 歲時身心防禦編譯</h2>
+                <!-- 🖥️ 電腦版看到的完整說明 -->
+                <div class="desc">移動底部的中央容器，在 15 秒內收集落下的節氣食材與祝福微粒，製作專屬的端午御守。</div>
                 
                 <div class="stats-wrapper">
                     <div class="stat-box">
@@ -119,7 +146,6 @@
     </div>
 
     <script>
-        // LIFF ID 變數維護
         const MY_LIFF_ID = '2009826317-bfxoaTmF'; 
         
         async function initLIFF() {
@@ -148,7 +174,6 @@
             let stats = { rice: 0, leaf: 0, yolk: 0, bug: 0 };
             let items = [];
 
-            // 調整籃子碰撞區，預留底部空間給貓咪大頭繪圖
             const basket = {
                 x: canvas.width / 2 - 45,
                 y: canvas.height - 45, 
@@ -259,7 +284,6 @@
                 const displayLeaf = String(stats.leaf);
                 const liffUrl = `https://liff.line.me/${MY_LIFF_ID}`;
 
-                // 構建帶有跳轉遊戲按鈕的 Flex Message 
                 const flexData = {
                     type: "bubble",
                     body: {
@@ -333,11 +357,11 @@
                 }
             }
 
-            // 🎨 動態手繪：貓咪主廚高舉貓碗
+            // 動態手繪：貓咪主廚高舉貓碗
             function drawCatChef(bx, by, bw, bh) {
                 let centerX = bx + bw / 2;
 
-                // 1. 繪製貓頭 (從碗底探出來)
+                // 1. 繪製貓頭
                 ctx.fillStyle = '#cbd5e1'; 
                 ctx.beginPath();
                 ctx.arc(centerX, by + 32, 22, 0, Math.PI * 2);
@@ -345,20 +369,18 @@
 
                 // 2. 貓耳朵
                 ctx.fillStyle = '#cbd5e1';
-                // 左耳
                 ctx.beginPath();
                 ctx.moveTo(centerX - 18, by + 18);
                 ctx.lineTo(centerX - 24, by + 2);
                 ctx.lineTo(centerX - 8, by + 15);
                 ctx.fill();
-                // 右耳
                 ctx.beginPath();
                 ctx.moveTo(centerX + 18, by + 18);
                 ctx.lineTo(centerX + 24, by + 2);
                 ctx.lineTo(centerX + 8, by + 15);
                 ctx.fill();
 
-                // 耳朵內襯粉紅
+                // 耳朵內襯
                 ctx.fillStyle = '#fda4af';
                 ctx.beginPath();
                 ctx.moveTo(centerX - 16, by + 16);
@@ -371,20 +393,19 @@
                 ctx.lineTo(centerX + 9, by + 14);
                 ctx.fill();
 
-                // 3. 亮晶晶大眼睛
+                // 3. 眼睛
                 ctx.fillStyle = '#0f141c';
                 ctx.beginPath();
                 ctx.arc(centerX - 8, by + 26, 3.5, 0, Math.PI * 2);
                 ctx.arc(centerX + 8, by + 26, 3.5, 0, Math.PI * 2);
                 ctx.fill();
-                // 眼神光芒
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
                 ctx.arc(centerX - 9, by + 25, 1, 0, Math.PI * 2);
                 ctx.arc(centerX + 7, by + 25, 1, 0, Math.PI * 2);
                 ctx.fill();
 
-                // 4. 小粉鼻
+                // 4. 鼻子
                 ctx.fillStyle = '#f43f5e';
                 ctx.beginPath();
                 ctx.moveTo(centerX, by + 29);
@@ -402,18 +423,16 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // 貓碗厚度質感
                 ctx.fillStyle = '#ea580c';
                 ctx.fillRect(bx + 8, by, bw - 16, 3);
 
-                // 6. 托住碗側邊的貓爪爪
+                // 6. 貓爪
                 ctx.fillStyle = '#cbd5e1';
                 ctx.beginPath();
                 ctx.arc(bx + 12, by + bh - 2, 7, 0, Math.PI * 2);
                 ctx.arc(bx + bw - 12, by + bh - 2, 7, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 粉嫩小肉墊
                 ctx.fillStyle = '#fda4af';
                 ctx.beginPath();
                 ctx.arc(bx + 12, by + bh - 2, 3, 0, Math.PI * 2);
@@ -424,7 +443,6 @@
             function gameLoop() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // 渲染手繪貓咪主廚
                 drawCatChef(basket.x, basket.y, basket.width, basket.height);
 
                 if (gameState === 'PLAYING') {
@@ -440,7 +458,6 @@
                         ctx.fill();
                         ctx.closePath();
 
-                        // 判斷是否落入貓碗中
                         if (item.y >= basket.y && item.y <= basket.y + basket.height &&
                             item.x >= basket.x && item.x <= basket.x + basket.width) {
                             
