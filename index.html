@@ -12,7 +12,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-height: 100vh; 
-            /* 防止手機畫面上滑下拉的橡皮筋效果影響遊戲 */
             overflow: hidden; 
             touch-action: none;
         }
@@ -55,39 +54,30 @@
         }
         @keyframes fadeIn { to { opacity: 1 } }
 
-        /* 📱 RWD 行動裝置主場優化 (螢幕寬度小於 650px) */
+        /* 📱 手機端 RWD 最佳化佈局（防止物件超出螢幕、確保點得到按鈕） */
         @media (max-width: 650px) {
-            body { justify-content: flex-start; padding: 10px 0; overflow-y: auto; }
+            body { justify-content: center; padding: 5px; }
             .game-container {
                 flex-direction: column;
-                padding: 12px;
-                gap: 12px;
+                padding: 10px;
+                gap: 8px;
                 width: 95vw;
-                max-width: 400px; /* 控制在單手好操作的寬度 */
+                max-width: 390px;
+                max-height: 98vh;
             }
-            canvas {
-                width: 100%;
-                height: auto; /* 等比例縮放高度 */
-            }
-            .dashboard {
-                width: 100%;
-                flex-direction: column;
-                gap: 10px;
-            }
-            .desc { margin-bottom: 10px; font-size: 12px; }
-            /* 讓兩個數據方塊在手機上橫向並排，節省空間 */
-            .stats-wrapper {
-                display: flex;
-                gap: 10px;
-            }
-            .stat-box { margin-bottom: 0; padding: 8px 12px; }
-            .stat-value { font-size: 20px; }
+            .dashboard { width: 100%; }
+            h2 { font-size: 15px; margin: 0; text-align: center; }
+            .desc { display: none; } /* 行動裝置上隱藏長文案騰出垂直空間 */
+            
+            .stats-wrapper { display: flex; gap: 8px; margin-top: 4px; }
+            .stat-box { padding: 6px 10px; }
+            .stat-value { font-size: 18px; }
             .legend { 
-                margin-top: 5px; padding-top: 10px;
+                margin-top: 6px; padding-top: 6px;
                 display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
             }
-            .legend-item { margin-bottom: 4px; }
-            .btn-action { padding: 12px; margin-top: 5px; }
+            .legend-item { margin-bottom: 0; font-size: 11px; }
+            .btn-action { padding: 12px; margin-top: 6px; font-size: 13px; }
         }
     </style>
 </head>
@@ -98,7 +88,8 @@
             <div class="terminal-box" id="terminal-content"></div>
         </div>
 
-        <canvas id="pachinko" width="380" height="520"></canvas>
+        <canvas id="pachinko" width="380" height="420"></canvas>
+        
         <div class="dashboard">
             <div>
                 <h2>🌿 歲時身心防禦編譯</h2>
@@ -106,12 +97,12 @@
                 
                 <div class="stats-wrapper">
                     <div class="stat-box">
-                        <div class="stat-label">倒數計時 (Timer)</div>
+                        <div class="stat-label">倒數計時</div>
                         <div class="stat-value" id="timer-val" style="color: #f59e0b;">15s</div>
                     </div>
                     
                     <div class="stat-box">
-                        <div class="stat-label">已封裝食材 (Ingredients)</div>
+                        <div class="stat-label">已封裝食材</div>
                         <div class="stat-value" id="score-val">0</div>
                     </div>
                 </div>
@@ -128,18 +119,14 @@
     </div>
 
     <script>
-        // 初始化 LINE LIFF 
+        // LIFF ID 變數維護
         const MY_LIFF_ID = '2009826317-bfxoaTmF'; 
         
         async function initLIFF() {
             try {
                 await liff.init({ liffId: MY_LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                }
-            } catch (error) {
-                console.error("LIFF 初始化失敗", error);
-            }
+                if (!liff.isLoggedIn()) { liff.login(); }
+            } catch (error) { console.error("LIFF 初始化失敗", error); }
         }
         initLIFF();
 
@@ -158,40 +145,35 @@
             let timerInterval;
             let totalItemsCaught = 0;
             
-            // 收集比例統計
             let stats = { rice: 0, leaf: 0, yolk: 0, bug: 0 };
             let items = [];
 
+            // 調整籃子碰撞區，預留底部空間給貓咪大頭繪圖
             const basket = {
                 x: canvas.width / 2 - 45,
-                y: canvas.height - 40,
+                y: canvas.height - 45, 
                 width: 90,
-                height: 12,
-                color: '#10b981'
+                height: 15 
             };
 
             const ITEM_TYPES = [
-                { name: 'rice', color: '#e2e8f0', radius: 4, speed: 2.2, weight: 0.5 },
-                { name: 'leaf', color: '#10b981', radius: 6, speed: 2.6, weight: 0.25 },
-                { name: 'yolk', color: '#f59e0b', radius: 7, speed: 3.0, weight: 0.15 },
-                { name: 'bug', color: '#f43f5e', radius: 5, speed: 3.4, weight: 0.10 }
+                { name: 'rice', color: '#e2e8f0', radius: 4, speed: 2.5, weight: 0.5 },
+                { name: 'leaf', color: '#10b981', radius: 6, speed: 2.8, weight: 0.25 },
+                { name: 'yolk', color: '#f59e0b', radius: 7, speed: 3.2, weight: 0.15 },
+                { name: 'bug', color: '#f43f5e', radius: 5, speed: 3.5, weight: 0.10 }
             ];
 
-            // 取得觸控或滑鼠相對於 Canvas 實際渲染比例的 X 座標
             function getCanvasX(clientX) {
                 const rect = canvas.getBoundingClientRect();
-                // 考量到 CSS 可能對 Canvas 進行了縮放 (例如手機上 width 變小了)
                 return (clientX - rect.left) * (canvas.width / rect.width);
             }
 
-            // 滑鼠控制
             canvas.addEventListener('mousemove', (e) => {
                 if (gameState !== 'PLAYING') return;
                 basket.x = getCanvasX(e.clientX) - basket.width / 2;
                 keepBasketInBounds();
             });
 
-            // 觸控控制
             canvas.addEventListener('touchmove', (e) => {
                 if (gameState !== 'PLAYING') return;
                 basket.x = getCanvasX(e.touches[0].clientX) - basket.width / 2;
@@ -231,7 +213,6 @@
                 }, 1000);
             }
 
-            // 轉場
             function triggerTransition() {
                 gameState = 'FINISHED';
                 canvas.style.filter = 'blur(6px)';
@@ -254,9 +235,9 @@
                         div.style.animation = 'fadeIn 0.4s forwards';
                         terminal.appendChild(div);
                         currentLine++;
-                        setTimeout(printLog, 700); 
+                        setTimeout(printLog, 600); 
                     } else {
-                        setTimeout(sendFlexMessage, 1200); 
+                        setTimeout(sendFlexMessage, 1000); 
                     }
                 }
                 printLog();
@@ -274,6 +255,11 @@
                     resultDesc = "糯米健脾胃，是所有經典風味的起點。默默把基礎打好，踏實過好每一天。根基穩固，外邪不入，專注生活本身就是最迷人的防禦美學。";
                 }
 
+                const displayRice = String(stats.rice);
+                const displayLeaf = String(stats.leaf);
+                const liffUrl = `https://liff.line.me/${MY_LIFF_ID}`;
+
+                // 構建帶有跳轉遊戲按鈕的 Flex Message 
                 const flexData = {
                     type: "bubble",
                     body: {
@@ -282,8 +268,8 @@
                         backgroundColor: "#0f141c",
                         paddingAll: "20px",
                         contents: [
-                            { type: "text", text: "🫔 端午歲時・身心御守", weight: "bold", color: "#10b981", size: "sm", letterSpacing: "1px" },
-                            { type: "text", text: resultTitle, weight: "bold", size: "lg", margin: "md", color: "#e2e8f0", wrap: true },
+                            { type: "text", text: "🫔 端午歲時・身心御守", weight: "bold", color: "#10b981", size: "sm" },
+                            { type: "text", text: resultTitle, weight: "bold", size: "md", margin: "md", color: "#e2e8f0", wrap: true },
                             { type: "separator", margin: "lg", color: "#2e3d52" },
                             {
                                 type: "box", layout: "vertical", margin: "lg", spacing: "sm",
@@ -291,22 +277,42 @@
                                     {
                                         type: "box", layout: "horizontal",
                                         contents: [
-                                            { type: "text", text: "基礎紮實度", size: "xs", color: "#64748b" },
-                                            { type: "text", text: `${stats.rice * 10}%`, size: "xs", color: "#34d399", align: "end" }
+                                            { type: "text", text: "基礎封裝量 (Rice)", size: "xs", color: "#64748b" },
+                                            { type: "text", text: displayRice + " units", size: "xs", color: "#34d399", align: "end" }
                                         ]
                                     },
                                     {
                                         type: "box", layout: "horizontal",
                                         contents: [
-                                            { type: "text", text: "環境抗噪力", size: "xs", color: "#64748b" },
-                                            { type: "text", text: `${stats.leaf * 10}%`, size: "xs", color: "#34d399", align: "end" }
+                                            { type: "text", text: "環境抗噪值 (Leaf)", size: "xs", color: "#64748b" },
+                                            { type: "text", text: displayLeaf + " layers", size: "xs", color: "#34d399", align: "end" }
                                         ]
                                     }
                                 ]
                             },
                             { type: "separator", margin: "lg", color: "#2e3d52" },
-                            { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true, lineSpacing: "1.6" },
-                            { type: "text", text: "🐾 System_Cat 靜靜陪伴 ｜ 端午安康", margin: "xxl", size: "xs", color: "#64748b", fontStyle: "italic" }
+                            { type: "text", text: resultDesc, margin: "lg", size: "sm", color: "#94a3b8", wrap: true },
+                            { type: "text", text: "🐾 System_Cat 靜靜陪伴 ｜ 端午安康", margin: "xxl", size: "xs", color: "#64748b" }
+                        ]
+                    },
+                    footer: {
+                        type: "box",
+                        layout: "vertical",
+                        backgroundColor: "#0f141c",
+                        paddingAll: "15px",
+                        paddingTop: "0px", 
+                        contents: [
+                            {
+                                type: "button",
+                                action: {
+                                    type: "uri",
+                                    label: "⚡ 編譯我的身心御守",
+                                    uri: liffUrl
+                                },
+                                style: "primary",
+                                color: "#10b981", 
+                                height: "sm"
+                            }
                         ]
                     }
                 };
@@ -319,19 +325,107 @@
                     }]).then(() => {
                         liff.closeWindow(); 
                     }).catch((err) => {
-                        console.error("傳送失敗或使用者取消", err);
+                        console.error("傳送失敗或取消", err);
                         liff.closeWindow();
                     });
                 } else {
-                    alert("請在 LINE 環境中執行以發送賀卡");
+                    alert("請在 LINE App 內開啟此網頁方能分享賀卡。");
                 }
+            }
+
+            // 🎨 動態手繪：貓咪主廚高舉貓碗
+            function drawCatChef(bx, by, bw, bh) {
+                let centerX = bx + bw / 2;
+
+                // 1. 繪製貓頭 (從碗底探出來)
+                ctx.fillStyle = '#cbd5e1'; 
+                ctx.beginPath();
+                ctx.arc(centerX, by + 32, 22, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 2. 貓耳朵
+                ctx.fillStyle = '#cbd5e1';
+                // 左耳
+                ctx.beginPath();
+                ctx.moveTo(centerX - 18, by + 18);
+                ctx.lineTo(centerX - 24, by + 2);
+                ctx.lineTo(centerX - 8, by + 15);
+                ctx.fill();
+                // 右耳
+                ctx.beginPath();
+                ctx.moveTo(centerX + 18, by + 18);
+                ctx.lineTo(centerX + 24, by + 2);
+                ctx.lineTo(centerX + 8, by + 15);
+                ctx.fill();
+
+                // 耳朵內襯粉紅
+                ctx.fillStyle = '#fda4af';
+                ctx.beginPath();
+                ctx.moveTo(centerX - 16, by + 16);
+                ctx.lineTo(centerX - 21, by + 5);
+                ctx.lineTo(centerX - 9, by + 14);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(centerX + 16, by + 16);
+                ctx.lineTo(centerX + 21, by + 5);
+                ctx.lineTo(centerX + 9, by + 14);
+                ctx.fill();
+
+                // 3. 亮晶晶大眼睛
+                ctx.fillStyle = '#0f141c';
+                ctx.beginPath();
+                ctx.arc(centerX - 8, by + 26, 3.5, 0, Math.PI * 2);
+                ctx.arc(centerX + 8, by + 26, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                // 眼神光芒
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(centerX - 9, by + 25, 1, 0, Math.PI * 2);
+                ctx.arc(centerX + 7, by + 25, 1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 4. 小粉鼻
+                ctx.fillStyle = '#f43f5e';
+                ctx.beginPath();
+                ctx.moveTo(centerX, by + 29);
+                ctx.lineTo(centerX - 2, by + 27);
+                ctx.lineTo(centerX + 2, by + 27);
+                ctx.fill();
+
+                // 5. 繪製橘色貓碗 
+                ctx.fillStyle = '#f97316'; 
+                ctx.beginPath();
+                ctx.moveTo(bx + 10, by);
+                ctx.lineTo(bx + bw - 10, by);
+                ctx.lineTo(bx + bw - 18, by + bh);
+                ctx.lineTo(bx + 18, by + bh);
+                ctx.closePath();
+                ctx.fill();
+
+                // 貓碗厚度質感
+                ctx.fillStyle = '#ea580c';
+                ctx.fillRect(bx + 8, by, bw - 16, 3);
+
+                // 6. 托住碗側邊的貓爪爪
+                ctx.fillStyle = '#cbd5e1';
+                ctx.beginPath();
+                ctx.arc(bx + 12, by + bh - 2, 7, 0, Math.PI * 2);
+                ctx.arc(bx + bw - 12, by + bh - 2, 7, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 粉嫩小肉墊
+                ctx.fillStyle = '#fda4af';
+                ctx.beginPath();
+                ctx.arc(bx + 12, by + bh - 2, 3, 0, Math.PI * 2);
+                ctx.arc(bx + bw - 12, by + bh - 2, 3, 0, Math.PI * 2);
+                ctx.fill();
             }
 
             function gameLoop() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                ctx.fillStyle = basket.color;
-                ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+                // 渲染手繪貓咪主廚
+                drawCatChef(basket.x, basket.y, basket.width, basket.height);
 
                 if (gameState === 'PLAYING') {
                     if (Math.random() < 0.09) spawnItem();
@@ -346,6 +440,7 @@
                         ctx.fill();
                         ctx.closePath();
 
+                        // 判斷是否落入貓碗中
                         if (item.y >= basket.y && item.y <= basket.y + basket.height &&
                             item.x >= basket.x && item.x <= basket.x + basket.width) {
                             
@@ -366,7 +461,7 @@
                     ctx.fillStyle = '#64748b';
                     ctx.font = '13px sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('⚡ 準備就緒，點擊按鈕開始 ⚡', canvas.width / 2, canvas.height / 2);
+                    ctx.fillText('⚡ 準備就緒，點擊下方按鈕開始 ⚡', canvas.width / 2, canvas.height / 3);
                 }
 
                 requestAnimationFrame(gameLoop);
