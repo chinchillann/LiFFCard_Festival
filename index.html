@@ -384,8 +384,21 @@
                         console.error("傳送失敗或取消", err);
                         liff.closeWindow();
                     });
-                } else {
-                    alert("請在 LINE App 內開啟此網頁方能分享賀卡。");
+                } // 💻 如果是電腦版或外部瀏覽器，嘗試直接發送訊息到當前聊天室
+                else if (liff.isInClient()) {
+                    liff.sendMessages([{
+                        type: "flex",
+                        altText: "收到了來自端午歲時的身心防禦御守",
+                        contents: flexData
+                    }]).then(() => {
+                        liff.closeWindow();
+                    }).catch((err) => {
+                        console.error("電腦版發送失敗", err);
+                        alert("傳送失敗，請確保是在 LINE 聊天室中開啟此應用。");
+                    });
+                }                
+                else {
+                    alert("請從 LINE 聊天室內開啟網頁，才能發送賀卡喔！");
                 }
             }
 
